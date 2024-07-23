@@ -43,7 +43,14 @@ public class UsuarioService {
         return usuarioDTO;
     }
 
-    public Optional<Usuario> findByUsername(String username) {
-        return usuarioRepository.findByUsername(username);
+    public Usuario validarUsuario(String username, String password) {
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        if (!passwordEncoder.matches(password, usuario.getPassword())) {
+            throw new RuntimeException("Credenciais inválidas");
+        }
+
+        return usuario;
     }
 }
