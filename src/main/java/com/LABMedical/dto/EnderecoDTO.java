@@ -1,10 +1,12 @@
 package com.LABMedical.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @Data
+@AllArgsConstructor
 public class EnderecoDTO {
     @NotBlank(message = "O CEP é obrigatório")
     @Size(max = 8, message = "O CEP deve ter no máximo 8 caracteres")

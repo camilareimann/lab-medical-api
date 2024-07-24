@@ -1,17 +1,16 @@
 package com.LABMedical.service;
 
+import com.LABMedical.dto.EnderecoDTO;
 import com.LABMedical.dto.PacienteDTO;
+import com.LABMedical.model.Endereco;
 import com.LABMedical.model.Paciente;
 import com.LABMedical.model.Usuario;
 import com.LABMedical.repository.PacienteRepository;
 import com.LABMedical.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,6 +41,7 @@ public class PacienteService {
         paciente.setConvenio(pacienteDTO.getConvenio());
         paciente.setNumeroConvenio(pacienteDTO.getNumeroConvenio());
         paciente.setValidadeConvenio(pacienteDTO.getValidadeConvenio());
+        // Usando o construtor com todos os parâmetros
         paciente.setEndereco(new Endereco(
                 pacienteDTO.getEndereco().getCep(),
                 pacienteDTO.getEndereco().getCidade(),
@@ -91,6 +91,7 @@ public class PacienteService {
         paciente.setConvenio(pacienteDTO.getConvenio());
         paciente.setNumeroConvenio(pacienteDTO.getNumeroConvenio());
         paciente.setValidadeConvenio(pacienteDTO.getValidadeConvenio());
+        // Usando o construtor com todos os parâmetros
         paciente.setEndereco(new Endereco(
                 pacienteDTO.getEndereco().getCep(),
                 pacienteDTO.getEndereco().getCidade(),

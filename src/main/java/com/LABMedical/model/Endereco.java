@@ -2,10 +2,15 @@ package com.LABMedical.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Embeddable
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Endereco {
 
     @Column(nullable = false)

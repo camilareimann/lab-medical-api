@@ -1,5 +1,6 @@
 package com.LABMedical.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -33,7 +34,7 @@ public class PacienteDTO {
     private String estadoCivil;
 
     @NotBlank(message = "O telefone é obrigatório")
-    @Pattern(regexp = "\\(\\d{2}\\) \\d{1} \\d{4}-\\d{4}", message = "O telefone deve estar no formato (99) 9 9999-99999")
+    @Pattern(regexp = "\\(\\d{2}\\) \\d{1} \\d{4}-\\d{4}", message = "O telefone deve estar no formato (99) 9 9999-9999")
     private String telefone;
 
     @Email(message = "O email deve ser válido")
@@ -44,7 +45,7 @@ public class PacienteDTO {
     private String naturalidade;
 
     @NotBlank(message = "O contato de emergência é obrigatório")
-    @Pattern(regexp = "\\(\\d{2}\\) \\d{1} \\d{4}-\\d{4}", message = "O contato de emergência deve estar no formato (99) 9 9999-99999")
+    @Pattern(regexp = "\\(\\d{2}\\) \\d{1} \\d{4}-\\d{4}", message = "O contato de emergência deve estar no formato (99) 9 9999-9999")
     private String contatoEmergencia;
 
     private List<String> alergias;
@@ -54,6 +55,7 @@ public class PacienteDTO {
     private LocalDate validadeConvenio;
 
     @NotNull(message = "O endereço é obrigatório")
+    @Valid
     private EnderecoDTO endereco;
 
     @NotNull(message = "O ID do usuário é obrigatório")
