@@ -1,13 +1,15 @@
 package com.LABMedical.service;
 
-import com.LABMedical.dto.EnderecoDTO;
-import com.LABMedical.dto.PacienteDTO;
-import com.LABMedical.model.Endereco;
-import com.LABMedical.model.Paciente;
-import com.LABMedical.model.Usuario;
+import com.LABMedical.dto.*;
+import com.LABMedical.model.*;
+import com.LABMedical.repository.ConsultaRepository;
+import com.LABMedical.repository.ExameRepository;
 import com.LABMedical.repository.PacienteRepository;
 import com.LABMedical.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -19,6 +21,8 @@ public class PacienteService {
 
     private final PacienteRepository pacienteRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ExameRepository exameRepository;
+    private final ConsultaRepository consultaRepository;
 
     @Transactional
     public PacienteDTO criarPaciente(PacienteDTO pacienteDTO) {
@@ -144,5 +148,56 @@ public class PacienteService {
         ));
         pacienteDTO.setIdUsuario(paciente.getUsuario().getId());
         return pacienteDTO;
+    }
+
+    public List<PacienteDTO> listarPacientesProntuarios(String nome, String numeroRegistro, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Paciente> pacientesPage = pacienteRepository.findByNomeOrNumeroRegistro(nome, numeroRegistro, pageable);
+        return pacientesPage.stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    public ProntuarioDTO listarProntuariosDoPaciente(Long id) {
+        Paciente paciente = pacienteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+        List<Consulta> consultas = consultaRepository.findByPacienteOrderByDataConsultaAsc(paciente);
+        List<Exame> exames = exameRepository.findByPacienteOrderByDataExameAsc(paciente);
+
+        ProntuarioDTO prontuarioDTO = new ProntuarioDTO();
+        prontuarioDTO.setNome(paciente.getNomeCompleto());
+        prontuarioDTO.setConvenio(paciente.getConvenio());
+        prontuarioDTO.setContatoEmergencia(paciente.getContatoEmergencia());
+        prontuarioDTO.setAlergias(paciente.getAlergias());
+        prontuarioDTO.setCuidadosEspecificos(paciente.getCuidadosEspecificos());
+        prontuarioDTO.setConsultas(consultas.stream().map(this::mapToConsultaDTO).collect(Collectors.toList()));
+        prontuarioDTO.setExames(exames.stream().map(this::mapToExameDTO).collect(Collectors.toList()));
+
+        return prontuarioDTO;
+    }
+
+    private ConsultaDTO mapToConsultaDTO(Consulta consulta) {
+        ConsultaDTO consultaDTO = new ConsultaDTO();
+        consultaDTO.setId(consulta.getId());
+        consultaDTO.setMotivo(consulta.getMotivo());
+        consultaDTO.setDataConsulta(consulta.getDataConsulta());
+        consultaDTO.setHorarioConsulta(consulta.getHorarioConsulta());
+        consultaDTO.setDescricaoProblema(consulta.getDescricaoProblema());
+        consultaDTO.setMedicacaoReceitada(consulta.getMedicacaoReceitada());
+        consultaDTO.setDosagemPrecaucao(consulta.getDosagemPrecaucao());
+        consultaDTO.setIdPaciente(consulta.getPaciente().getId());
+        return consultaDTO;
+    }
+
+    private ExameDTO mapToExameDTO(Exame exame) {
+        ExameDTO exameDTO = new ExameDTO();
+        exameDTO.setId(exame.getId());
+        exameDTO.setNome(exame.getNome());
+        exameDTO.setDataExame(exame.getDataExame());
+        exameDTO.setHorarioExame(exame.getHorarioExame());
+        exameDTO.setTipo(exame.getTipo());
+        exameDTO.setLaboratorio(exame.getLaboratorio());
+        exameDTO.setUrlDocumento(exame.getUrlDocumento());
+        exameDTO.setResultados(exame.getResultados());
+        exameDTO.setIdPaciente(exame.getPaciente().getId());
+        return exameDTO;
     }
 }
