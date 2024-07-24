@@ -14,24 +14,33 @@ public class Paciente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nomeCompleto;
 
+    @Column(nullable = false)
     private String genero;
 
+    @Column(nullable = false)
     private LocalDate dataNascimento;
 
+    @Column(nullable = false, unique = true)
     private String cpf;
 
+    @Column(nullable = false)
     private String rg;
 
+    @Column(nullable = false)
     private String estadoCivil;
 
+    @Column(nullable = false)
     private String telefone;
 
     private String email;
 
+    @Column(nullable = false)
     private String naturalidade;
 
+    @Column(nullable = false)
     private String contatoEmergencia;
 
     @ElementCollection
@@ -50,5 +59,6 @@ public class Paciente {
     private Endereco endereco;
 
     @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 }
