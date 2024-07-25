@@ -45,7 +45,6 @@ public class PacienteService {
         paciente.setConvenio(pacienteDTO.getConvenio());
         paciente.setNumeroConvenio(pacienteDTO.getNumeroConvenio());
         paciente.setValidadeConvenio(pacienteDTO.getValidadeConvenio());
-        // Usando o construtor com todos os parâmetros
         paciente.setEndereco(new Endereco(
                 pacienteDTO.getEndereco().getCep(),
                 pacienteDTO.getEndereco().getCidade(),

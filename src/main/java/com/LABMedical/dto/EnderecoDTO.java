@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 @AllArgsConstructor
 public class EnderecoDTO {
     @NotBlank(message = "O CEP é obrigatório")
-    @Size(max = 8, message = "O CEP deve ter no máximo 8 caracteres")
+    @Size(max = 9, message = "O CEP deve ter no máximo 9 caracteres")
     private String cep;
 
     @NotBlank(message = "A cidade é obrigatória")

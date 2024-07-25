@@ -2,17 +2,17 @@ package com.LABMedical.model;
 
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuarios")
 @Data
 public class Usuario implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "usuario_id")
@@ -33,12 +33,17 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private LocalDate dataNascimento;
 
-    @Column(nullable = false)
-    private String perfil;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "usuario_perfis",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "perfil_id")
+    )
+    private Set<Perfil> perfil;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(perfil));
+        return perfil;
     }
 
     @Override

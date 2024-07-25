@@ -15,6 +15,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -28,7 +29,6 @@ import java.security.interfaces.RSAPublicKey;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
 public class SecurityConfig {
 
     @Value("${jwt.public.key}")
@@ -42,13 +42,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/pacientes/**", "/consultas/**", "/exames/**", "/dashboard").hasAnyAuthority("ROLE_ADMIN", "ROLE_MEDICO", "ROLE_PACIENTE")
-                        .requestMatchers(HttpMethod.POST, "/pacientes", "/consultas", "/exames").hasAnyAuthority("ROLE_ADMIN", "ROLE_MEDICO")
-                        .requestMatchers(HttpMethod.PUT, "/pacientes/**", "/consultas/**", "/exames/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MEDICO")
-                        .requestMatchers(HttpMethod.DELETE, "/pacientes/**", "/consultas/**", "/exames/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_MEDICO")
+                        .requestMatchers(HttpMethod.GET, "/pacientes/**", "/consultas/**", "/exames/**", "/dashboard").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/pacientes", "/consultas", "/exames").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/pacientes/**", "/consultas/**", "/exames/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/pacientes/**", "/consultas/**", "/exames/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         return http.build();
