@@ -3,7 +3,6 @@ package com.LABMedical.dto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -58,6 +57,6 @@ public class PacienteDTO {
     @Valid
     private EnderecoDTO endereco;
 
-    @NotNull(message = "O ID do usuário é obrigatório")
-    private Long idUsuario;
+    @NotBlank(message = "O nome de usuário é obrigatório")
+    private String username;
 }

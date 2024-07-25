@@ -1,6 +1,8 @@
 package com.LABMedical.service;
 
-import com.LABMedical.dto.*;
+import com.LABMedical.dto.PacienteDTO;
+import com.LABMedical.dto.ProntuarioDTO;
+import com.LABMedical.mapper.MapperUtils;
 import com.LABMedical.model.*;
 import com.LABMedical.repository.ConsultaRepository;
 import com.LABMedical.repository.ExameRepository;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,8 +29,19 @@ public class PacienteService {
 
     @Transactional
     public PacienteDTO criarPaciente(PacienteDTO pacienteDTO) {
-        Usuario usuario = usuarioRepository.findById(pacienteDTO.getIdUsuario())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        Usuario usuario = usuarioRepository.findByUsername(pacienteDTO.getUsername())
+                .orElseThrow(() -> new RuntimeException("Usuário não cadastrado"));
+
+        if (!usuario.getCpf().equals(pacienteDTO.getCpf())) {
+            throw new RuntimeException("CPF do usuário não corresponde ao CPF do paciente");
+        }
+
+        boolean hasPacienteRole = usuario.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("SCOPE_PACIENTE"));
+
+        if (!hasPacienteRole) {
+            throw new RuntimeException("Usuário não tem o perfil de PACIENTE");
+        }
 
         Paciente paciente = new Paciente();
         paciente.setNomeCompleto(pacienteDTO.getNomeCompleto());
@@ -65,12 +79,12 @@ public class PacienteService {
     public PacienteDTO buscarPaciente(Long id) {
         Paciente paciente = pacienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
-        return mapToDTO(paciente);
+        return MapperUtils.mapToPacienteDTO(paciente);
     }
 
     public List<PacienteDTO> listarPacientes() {
         return pacienteRepository.findAll().stream()
-                .map(this::mapToDTO)
+                .map(MapperUtils::mapToPacienteDTO)
                 .collect(Collectors.toList());
     }
 
@@ -78,6 +92,20 @@ public class PacienteService {
     public PacienteDTO atualizarPaciente(Long id, PacienteDTO pacienteDTO) {
         Paciente paciente = pacienteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+
+        Usuario usuario = usuarioRepository.findByUsername(pacienteDTO.getUsername())
+                .orElseThrow(() -> new RuntimeException("Usuário não cadastrado"));
+
+        if (!usuario.getCpf().equals(pacienteDTO.getCpf())) {
+            throw new RuntimeException("CPF do usuário não corresponde ao CPF do paciente");
+        }
+
+        boolean hasPacienteRole = usuario.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("SCOPE_PACIENTE"));
+
+        if (!hasPacienteRole) {
+            throw new RuntimeException("Usuário não tem o perfil de PACIENTE");
+        }
 
         paciente.setNomeCompleto(pacienteDTO.getNomeCompleto());
         paciente.setGenero(pacienteDTO.getGenero());
@@ -94,7 +122,6 @@ public class PacienteService {
         paciente.setConvenio(pacienteDTO.getConvenio());
         paciente.setNumeroConvenio(pacienteDTO.getNumeroConvenio());
         paciente.setValidadeConvenio(pacienteDTO.getValidadeConvenio());
-        // Usando o construtor com todos os parâmetros
         paciente.setEndereco(new Endereco(
                 pacienteDTO.getEndereco().getCep(),
                 pacienteDTO.getEndereco().getCidade(),
@@ -105,11 +132,10 @@ public class PacienteService {
                 pacienteDTO.getEndereco().getBairro(),
                 pacienteDTO.getEndereco().getPontoDeReferencia()
         ));
-        paciente.setUsuario(usuarioRepository.findById(pacienteDTO.getIdUsuario())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado")));
+        paciente.setUsuario(usuario);
 
         paciente = pacienteRepository.save(paciente);
-        return mapToDTO(paciente);
+        return MapperUtils.mapToPacienteDTO(paciente);
     }
 
     @Transactional
@@ -117,42 +143,10 @@ public class PacienteService {
         pacienteRepository.deleteById(id);
     }
 
-    private PacienteDTO mapToDTO(Paciente paciente) {
-        PacienteDTO pacienteDTO = new PacienteDTO();
-        pacienteDTO.setId(paciente.getId());
-        pacienteDTO.setNomeCompleto(paciente.getNomeCompleto());
-        pacienteDTO.setGenero(paciente.getGenero());
-        pacienteDTO.setDataNascimento(paciente.getDataNascimento());
-        pacienteDTO.setCpf(paciente.getCpf());
-        pacienteDTO.setRg(paciente.getRg());
-        pacienteDTO.setEstadoCivil(paciente.getEstadoCivil());
-        pacienteDTO.setTelefone(paciente.getTelefone());
-        pacienteDTO.setEmail(paciente.getEmail());
-        pacienteDTO.setNaturalidade(paciente.getNaturalidade());
-        pacienteDTO.setContatoEmergencia(paciente.getContatoEmergencia());
-        pacienteDTO.setAlergias(paciente.getAlergias());
-        pacienteDTO.setCuidadosEspecificos(paciente.getCuidadosEspecificos());
-        pacienteDTO.setConvenio(paciente.getConvenio());
-        pacienteDTO.setNumeroConvenio(paciente.getNumeroConvenio());
-        pacienteDTO.setValidadeConvenio(paciente.getValidadeConvenio());
-        pacienteDTO.setEndereco(new EnderecoDTO(
-                paciente.getEndereco().getCep(),
-                paciente.getEndereco().getCidade(),
-                paciente.getEndereco().getEstado(),
-                paciente.getEndereco().getLogradouro(),
-                paciente.getEndereco().getNumero(),
-                paciente.getEndereco().getComplemento(),
-                paciente.getEndereco().getBairro(),
-                paciente.getEndereco().getPontoDeReferencia()
-        ));
-        pacienteDTO.setIdUsuario(paciente.getUsuario().getId());
-        return pacienteDTO;
-    }
-
     public List<PacienteDTO> listarPacientesProntuarios(String nome, String numeroRegistro, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Paciente> pacientesPage = pacienteRepository.findByNomeOrNumeroRegistro(nome, numeroRegistro, pageable);
-        return pacientesPage.stream().map(this::mapToDTO).collect(Collectors.toList());
+        return pacientesPage.stream().map(MapperUtils::mapToPacienteDTO).collect(Collectors.toList());
     }
 
     public ProntuarioDTO listarProntuariosDoPaciente(Long id) {
@@ -167,36 +161,9 @@ public class PacienteService {
         prontuarioDTO.setContatoEmergencia(paciente.getContatoEmergencia());
         prontuarioDTO.setAlergias(paciente.getAlergias());
         prontuarioDTO.setCuidadosEspecificos(paciente.getCuidadosEspecificos());
-        prontuarioDTO.setConsultas(consultas.stream().map(this::mapToConsultaDTO).collect(Collectors.toList()));
-        prontuarioDTO.setExames(exames.stream().map(this::mapToExameDTO).collect(Collectors.toList()));
+        prontuarioDTO.setConsultas(consultas.stream().map(MapperUtils::mapToConsultaDTO).collect(Collectors.toList()));
+        prontuarioDTO.setExames(exames.stream().map(MapperUtils::mapToExameDTO).collect(Collectors.toList()));
 
         return prontuarioDTO;
-    }
-
-    private ConsultaDTO mapToConsultaDTO(Consulta consulta) {
-        ConsultaDTO consultaDTO = new ConsultaDTO();
-        consultaDTO.setId(consulta.getId());
-        consultaDTO.setMotivo(consulta.getMotivo());
-        consultaDTO.setDataConsulta(consulta.getDataConsulta());
-        consultaDTO.setHorarioConsulta(consulta.getHorarioConsulta());
-        consultaDTO.setDescricaoProblema(consulta.getDescricaoProblema());
-        consultaDTO.setMedicacaoReceitada(consulta.getMedicacaoReceitada());
-        consultaDTO.setDosagemPrecaucao(consulta.getDosagemPrecaucao());
-        consultaDTO.setIdPaciente(consulta.getPaciente().getId());
-        return consultaDTO;
-    }
-
-    private ExameDTO mapToExameDTO(Exame exame) {
-        ExameDTO exameDTO = new ExameDTO();
-        exameDTO.setId(exame.getId());
-        exameDTO.setNome(exame.getNome());
-        exameDTO.setDataExame(exame.getDataExame());
-        exameDTO.setHorarioExame(exame.getHorarioExame());
-        exameDTO.setTipo(exame.getTipo());
-        exameDTO.setLaboratorio(exame.getLaboratorio());
-        exameDTO.setUrlDocumento(exame.getUrlDocumento());
-        exameDTO.setResultados(exame.getResultados());
-        exameDTO.setIdPaciente(exame.getPaciente().getId());
-        return exameDTO;
     }
 }
