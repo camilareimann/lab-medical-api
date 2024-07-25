@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 public class UsuarioDTO {
@@ -34,6 +35,6 @@ public class UsuarioDTO {
     @Size(max = 255, message = "A senha deve ter no máximo 255 caracteres")
     private String password;
 
-    @NotBlank(message = "O perfil é obrigatório")
-    private String perfil;
+    @NotNull(message = "O perfil é obrigatório")
+    private Set<String> perfil;
 }
