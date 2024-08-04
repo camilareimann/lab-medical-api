@@ -3,13 +3,13 @@ package com.LABMedical.service;
 import com.LABMedical.dto.UsuarioDTO;
 import com.LABMedical.model.Perfil;
 import com.LABMedical.model.Usuario;
-import com.LABMedical.repository.PerfilRepository;
 import com.LABMedical.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,8 +17,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UsuarioService {
 
+    private static final Logger log = LoggerFactory.getLogger(UsuarioService.class);
+
     private final UsuarioRepository usuarioRepository;
-    private final PerfilRepository perfilRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Transactional
@@ -35,8 +36,7 @@ public class UsuarioService {
         usuario.setDataNascimento(usuarioDTO.getDataNascimento());
 
         Set<Perfil> perfis = usuarioDTO.getPerfil().stream()
-                .map(nomePerfil -> perfilRepository.findByAuthority("SCOPE_" + nomePerfil)
-                        .orElseThrow(() -> new RuntimeException("Role not found: " + nomePerfil)))
+                .map(nomePerfil -> Perfil.valueOf(nomePerfil.toUpperCase()))
                 .collect(Collectors.toSet());
         usuario.setPerfil(perfis);
 
@@ -47,13 +47,20 @@ public class UsuarioService {
     }
 
     public Usuario validarUsuario(String username, String password) {
+        log.debug("Validating user with username: {}", username);
+
         Usuario usuario = usuarioRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Credenciais inválidas"));
+                .orElseThrow(() -> {
+                    log.error("User not found with username: {}", username);
+                    return new RuntimeException("Credenciais inválidas");
+                });
 
         if (!passwordEncoder.matches(password, usuario.getPassword())) {
+            log.error("Invalid password for username: {}", username);
             throw new RuntimeException("Credenciais inválidas");
         }
 
+        log.debug("User validated successfully for username: {}", username);
         return usuario;
     }
 }

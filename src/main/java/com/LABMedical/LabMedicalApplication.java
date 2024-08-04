@@ -10,4 +10,5 @@ public class LabMedicalApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(LabMedicalApplication.class, args);
 	}
+
 }

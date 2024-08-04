@@ -36,13 +36,6 @@ public class PacienteService {
             throw new RuntimeException("CPF do usuário não corresponde ao CPF do paciente");
         }
 
-        boolean hasPacienteRole = usuario.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("SCOPE_PACIENTE"));
-
-        if (!hasPacienteRole) {
-            throw new RuntimeException("Usuário não tem o perfil de PACIENTE");
-        }
-
         Paciente paciente = new Paciente();
         paciente.setNomeCompleto(pacienteDTO.getNomeCompleto());
         paciente.setGenero(pacienteDTO.getGenero());
@@ -98,13 +91,6 @@ public class PacienteService {
 
         if (!usuario.getCpf().equals(pacienteDTO.getCpf())) {
             throw new RuntimeException("CPF do usuário não corresponde ao CPF do paciente");
-        }
-
-        boolean hasPacienteRole = usuario.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("SCOPE_PACIENTE"));
-
-        if (!hasPacienteRole) {
-            throw new RuntimeException("Usuário não tem o perfil de PACIENTE");
         }
 
         paciente.setNomeCompleto(pacienteDTO.getNomeCompleto());

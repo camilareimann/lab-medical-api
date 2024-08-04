@@ -1,35 +1,61 @@
 package com.LABMedical.service;
 
-import com.LABMedical.model.Usuario;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class TokenService {
 
     private final JwtEncoder jwtEncoder;
+    private final JwtDecoder jwtDecoder;
 
-    public String generateToken(Usuario usuario) {
+    public String generateToken(UserDetails userDetails) {
         Instant now = Instant.now();
-        String scope = usuario.getAuthorities().stream()
-                .map(authority -> authority.getAuthority())
-                .collect(Collectors.joining(" "));
-
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
-                .expiresAt(now.plusSeconds(36000L))
-                .subject(usuario.getUsername())
-                .claim("scope", scope)
+                .expiresAt(now.plusSeconds(36000))
+                .subject(userDetails.getUsername())
+                .claim("roles", userDetails.getAuthorities())
                 .build();
+        return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    }
 
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    public String extractUsername(String token) {
+        try {
+            Jwt jwt = jwtDecoder.decode(token);
+            return jwt.getSubject();
+        } catch (JwtException e) {
+            throw new RuntimeException("Invalid token");
+        }
+    }
+
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    private Boolean isTokenExpired(String token) {
+        try {
+            Jwt jwt = jwtDecoder.decode(token);
+            return jwt.getExpiresAt().isBefore(Instant.now());
+        } catch (JwtException e) {
+            return true;
+        }
+    }
+
+    public org.springframework.security.authentication.UsernamePasswordAuthenticationToken getAuthentication(String token, UserDetails userDetails) {
+        var authorities = userDetails.getAuthorities();
+        return new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(userDetails, null, authorities);
     }
 }
