@@ -23,13 +23,17 @@ public class LoginController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        Usuario usuario = usuarioService.validarUsuario(loginRequest.getUsername(), loginRequest.getPassword());
+        try {
+            Usuario usuario = usuarioService.validarUsuario(loginRequest.getUsername(), loginRequest.getPassword());
 
-        if (!passwordEncoder.matches(loginRequest.getPassword(), usuario.getPassword())) {
-            return ResponseEntity.status(401).build();
+            if (!passwordEncoder.matches(loginRequest.getPassword(), usuario.getPassword())) {
+                return ResponseEntity.status(401).build();
+            }
+
+            String token = tokenService.generateToken(usuario);
+            return ResponseEntity.ok(new LoginResponse(token, 36000L));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body(new LoginResponse(null, 0L));
         }
-
-        String token = tokenService.generateToken(usuario);
-        return ResponseEntity.ok(new LoginResponse(token, 36000L));
     }
 }

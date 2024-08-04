@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -33,13 +34,9 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private LocalDate dataNascimento;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "usuario_perfis",
-            joinColumns = @JoinColumn(name = "usuario_id"),
-            inverseJoinColumns = @JoinColumn(name = "perfil_id")
-    )
-    private Set<Perfil> perfil;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    private Set<Perfil> perfil = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
