@@ -1,13 +1,9 @@
 package com.LABMedical.service;
 
+import com.LABMedical.exception.TokenValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -36,7 +32,7 @@ public class TokenService {
             Jwt jwt = jwtDecoder.decode(token);
             return jwt.getSubject();
         } catch (JwtException e) {
-            throw new RuntimeException("Invalid token");
+            throw new TokenValidationException("Token inválido: " + e.getMessage());
         }
     }
 
@@ -50,7 +46,7 @@ public class TokenService {
             Jwt jwt = jwtDecoder.decode(token);
             return jwt.getExpiresAt().isBefore(Instant.now());
         } catch (JwtException e) {
-            return true;
+            throw new TokenValidationException("Token inválido: " + e.getMessage());
         }
     }
 

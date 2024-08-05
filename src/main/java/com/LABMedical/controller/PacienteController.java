@@ -2,11 +2,13 @@ package com.LABMedical.controller;
 
 import com.LABMedical.dto.PacienteDTO;
 import com.LABMedical.dto.ProntuarioDTO;
+import com.LABMedical.exception.ResourceNotFoundException;
 import com.LABMedical.service.PacienteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -54,7 +56,7 @@ public class PacienteController {
             @RequestParam(required = false, defaultValue = "10") int size) {
         List<PacienteDTO> pacientes = pacienteService.listarPacientesProntuarios(nome, numeroRegistro, page, size);
         if (pacientes.isEmpty()) {
-            return ResponseEntity.status(404).build();
+            throw new ResourceNotFoundException("Nenhum paciente encontrado com os critérios fornecidos");
         }
         return ResponseEntity.ok(pacientes);
     }
@@ -63,7 +65,7 @@ public class PacienteController {
     public ResponseEntity<ProntuarioDTO> listarProntuariosDoPaciente(@PathVariable Long id) {
         ProntuarioDTO prontuario = pacienteService.listarProntuariosDoPaciente(id);
         if (prontuario == null) {
-            return ResponseEntity.status(404).build();
+            throw new ResourceNotFoundException("Prontuário não encontrado para o paciente com ID: " + id);
         }
         return ResponseEntity.ok(prontuario);
     }
