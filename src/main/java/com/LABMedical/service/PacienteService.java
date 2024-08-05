@@ -2,8 +2,14 @@ package com.LABMedical.service;
 
 import com.LABMedical.dto.PacienteDTO;
 import com.LABMedical.dto.ProntuarioDTO;
+import com.LABMedical.exception.InvalidInputException;
+import com.LABMedical.exception.ResourceNotFoundException;
 import com.LABMedical.mapper.MapperUtils;
-import com.LABMedical.model.*;
+import com.LABMedical.model.Consulta;
+import com.LABMedical.model.Endereco;
+import com.LABMedical.model.Exame;
+import com.LABMedical.model.Paciente;
+import com.LABMedical.model.Usuario;
 import com.LABMedical.repository.ConsultaRepository;
 import com.LABMedical.repository.ExameRepository;
 import com.LABMedical.repository.PacienteRepository;
@@ -30,10 +36,10 @@ public class PacienteService {
     @Transactional
     public PacienteDTO criarPaciente(PacienteDTO pacienteDTO) {
         Usuario usuario = usuarioRepository.findByUsername(pacienteDTO.getUsername())
-                .orElseThrow(() -> new RuntimeException("Usuário não cadastrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não cadastrado com username: " + pacienteDTO.getUsername()));
 
         if (!usuario.getCpf().equals(pacienteDTO.getCpf())) {
-            throw new RuntimeException("CPF do usuário não corresponde ao CPF do paciente");
+            throw new InvalidInputException("CPF do usuário não corresponde ao CPF do paciente");
         }
 
         Paciente paciente = new Paciente();
@@ -71,7 +77,7 @@ public class PacienteService {
 
     public PacienteDTO buscarPaciente(Long id) {
         Paciente paciente = pacienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado com ID: " + id));
         return MapperUtils.mapToPacienteDTO(paciente);
     }
 
@@ -84,13 +90,13 @@ public class PacienteService {
     @Transactional
     public PacienteDTO atualizarPaciente(Long id, PacienteDTO pacienteDTO) {
         Paciente paciente = pacienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado com ID: " + id));
 
         Usuario usuario = usuarioRepository.findByUsername(pacienteDTO.getUsername())
-                .orElseThrow(() -> new RuntimeException("Usuário não cadastrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não cadastrado com username: " + pacienteDTO.getUsername()));
 
         if (!usuario.getCpf().equals(pacienteDTO.getCpf())) {
-            throw new RuntimeException("CPF do usuário não corresponde ao CPF do paciente");
+            throw new InvalidInputException("CPF do usuário não corresponde ao CPF do paciente");
         }
 
         paciente.setNomeCompleto(pacienteDTO.getNomeCompleto());
@@ -126,6 +132,9 @@ public class PacienteService {
 
     @Transactional
     public void deletarPaciente(Long id) {
+        if (!pacienteRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Paciente não encontrado com ID: " + id);
+        }
         pacienteRepository.deleteById(id);
     }
 
@@ -137,7 +146,7 @@ public class PacienteService {
 
     public ProntuarioDTO listarProntuariosDoPaciente(Long id) {
         Paciente paciente = pacienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado com ID: " + id));
         List<Consulta> consultas = consultaRepository.findByPacienteOrderByDataConsultaAsc(paciente);
         List<Exame> exames = exameRepository.findByPacienteOrderByDataExameAsc(paciente);
 

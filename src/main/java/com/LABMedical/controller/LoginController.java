@@ -2,6 +2,7 @@ package com.LABMedical.controller;
 
 import com.LABMedical.dto.LoginRequest;
 import com.LABMedical.dto.LoginResponse;
+import com.LABMedical.exception.UnauthorizedException;
 import com.LABMedical.model.Usuario;
 import com.LABMedical.service.TokenService;
 import com.LABMedical.service.UsuarioService;
@@ -27,13 +28,13 @@ public class LoginController {
             Usuario usuario = usuarioService.validarUsuario(loginRequest.getUsername(), loginRequest.getPassword());
 
             if (!passwordEncoder.matches(loginRequest.getPassword(), usuario.getPassword())) {
-                return ResponseEntity.status(401).build();
+                throw new UnauthorizedException("Credenciais inválidas");
             }
 
             String token = tokenService.generateToken(usuario);
             return ResponseEntity.ok(new LoginResponse(token, 36000L));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body(new LoginResponse(null, 0L));
+            throw new UnauthorizedException("Credenciais inválidas");
         }
     }
 }

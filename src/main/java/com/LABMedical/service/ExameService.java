@@ -1,6 +1,7 @@
 package com.LABMedical.service;
 
 import com.LABMedical.dto.ExameDTO;
+import com.LABMedical.exception.ResourceNotFoundException;
 import com.LABMedical.model.Exame;
 import com.LABMedical.model.Paciente;
 import com.LABMedical.repository.ExameRepository;
@@ -22,7 +23,7 @@ public class ExameService {
     @Transactional
     public ExameDTO criarExame(ExameDTO exameDTO) {
         Paciente paciente = pacienteRepository.findById(exameDTO.getIdPaciente())
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado com ID: " + exameDTO.getIdPaciente()));
 
         Exame exame = new Exame();
         exame.setNome(exameDTO.getNome());
@@ -41,7 +42,7 @@ public class ExameService {
 
     public ExameDTO buscarExame(Long id) {
         Exame exame = exameRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Exame não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Exame não encontrado com ID: " + id));
         return mapToDTO(exame);
     }
 
@@ -54,7 +55,10 @@ public class ExameService {
     @Transactional
     public ExameDTO atualizarExame(Long id, ExameDTO exameDTO) {
         Exame exame = exameRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Exame não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Exame não encontrado com ID: " + id));
+
+        Paciente paciente = pacienteRepository.findById(exameDTO.getIdPaciente())
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado com ID: " + exameDTO.getIdPaciente()));
 
         exame.setNome(exameDTO.getNome());
         exame.setDataExame(exameDTO.getDataExame());
@@ -63,8 +67,7 @@ public class ExameService {
         exame.setLaboratorio(exameDTO.getLaboratorio());
         exame.setUrlDocumento(exameDTO.getUrlDocumento());
         exame.setResultados(exameDTO.getResultados());
-        exame.setPaciente(pacienteRepository.findById(exameDTO.getIdPaciente())
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado")));
+        exame.setPaciente(paciente);
 
         exame = exameRepository.save(exame);
         return mapToDTO(exame);
@@ -72,6 +75,9 @@ public class ExameService {
 
     @Transactional
     public void deletarExame(Long id) {
+        if (!exameRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Exame não encontrado com ID: " + id);
+        }
         exameRepository.deleteById(id);
     }
 

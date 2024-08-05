@@ -1,6 +1,7 @@
 package com.LABMedical.service;
 
 import com.LABMedical.dto.ConsultaDTO;
+import com.LABMedical.exception.ResourceNotFoundException;
 import com.LABMedical.model.Consulta;
 import com.LABMedical.model.Paciente;
 import com.LABMedical.repository.ConsultaRepository;
@@ -22,7 +23,7 @@ public class ConsultaService {
     @Transactional
     public ConsultaDTO criarConsulta(ConsultaDTO consultaDTO) {
         Paciente paciente = pacienteRepository.findById(consultaDTO.getIdPaciente())
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado com ID: " + consultaDTO.getIdPaciente()));
 
         Consulta consulta = new Consulta();
         consulta.setMotivo(consultaDTO.getMotivo());
@@ -40,7 +41,7 @@ public class ConsultaService {
 
     public ConsultaDTO buscarConsulta(Long id) {
         Consulta consulta = consultaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrada com ID: " + id));
         return mapToDTO(consulta);
     }
 
@@ -53,7 +54,10 @@ public class ConsultaService {
     @Transactional
     public ConsultaDTO atualizarConsulta(Long id, ConsultaDTO consultaDTO) {
         Consulta consulta = consultaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrada com ID: " + id));
+
+        Paciente paciente = pacienteRepository.findById(consultaDTO.getIdPaciente())
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado com ID: " + consultaDTO.getIdPaciente()));
 
         consulta.setMotivo(consultaDTO.getMotivo());
         consulta.setDataConsulta(consultaDTO.getDataConsulta());
@@ -61,8 +65,7 @@ public class ConsultaService {
         consulta.setDescricaoProblema(consultaDTO.getDescricaoProblema());
         consulta.setMedicacaoReceitada(consultaDTO.getMedicacaoReceitada());
         consulta.setDosagemPrecaucao(consultaDTO.getDosagemPrecaucao());
-        consulta.setPaciente(pacienteRepository.findById(consultaDTO.getIdPaciente())
-                .orElseThrow(() -> new RuntimeException("Paciente não encontrado")));
+        consulta.setPaciente(paciente);
 
         consulta = consultaRepository.save(consulta);
         return mapToDTO(consulta);
@@ -70,6 +73,9 @@ public class ConsultaService {
 
     @Transactional
     public void deletarConsulta(Long id) {
+        if (!consultaRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Consulta não encontrada com ID: " + id);
+        }
         consultaRepository.deleteById(id);
     }
 

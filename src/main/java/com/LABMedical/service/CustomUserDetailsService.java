@@ -1,5 +1,6 @@
 package com.LABMedical.service;
 
+import com.LABMedical.exception.ResourceNotFoundException;
 import com.LABMedical.model.Usuario;
 import com.LABMedical.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+                .orElseThrow(() ->  new ResourceNotFoundException("Usuário não encontrado com username: " + username));
         return usuario;
     }
 }
