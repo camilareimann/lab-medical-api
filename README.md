@@ -102,6 +102,6 @@ Este projeto está licenciado sob a MIT License.
 ## Autor
 Desenvolvido por Camila Reimann em agosto 2024.
 
+## Documentação de Uso com Insomnia
 
-
-   
+Para instruções detalhadas sobre como usar a API com o Insomnia, consulte [USAGE.md](USAGE.md).
